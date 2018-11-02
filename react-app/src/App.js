@@ -12,12 +12,16 @@ class InputField extends React.Component
 	render()
 	{
 		return (
-			<div>
-				{ this.props.label }
-				<input
-					type="text"
+			<div className="form-group with-vertical-margin">
+				<label >
+					{ this.props.label }
+				</label>		
+				<textarea className='form-control'
+					rows={ this.props.rows }
+					maxlength={ this.props.maxlength }
 					placeholder=""
-					onChange={ this.props.onChange }/>
+					onChange={ this.props.onChange }>
+				</textarea>
 			</div>);
 	}
 }
@@ -78,12 +82,12 @@ export default class MainPage extends React.Component
 	render()
 	{
 		return (
-			<div>
+			<div className="container">
 				<InputField
-					label="BP account"
+					label="BP account" rows={ 1 } maxlength={ 12 }
 					onChange={ this.handleBpAccChange }/>
-				<select onChange={ this.onChangeHandler } name="vote"
-					value={ this.state.vote }>
+				<select onChange={ this.onChangeHandler } className='form-control with-vertical-margin'
+					name="vote" value={ this.state.vote }>
 					<option value="1">
 						Voted
 					</option>
@@ -92,7 +96,7 @@ export default class MainPage extends React.Component
 					</option>
 				</select>
 				<InputField
-					label="Memo"
+					label="Memo" rows={ 3 } maxlength={ 250 }
 					onChange={ this.handleMemoChange }/>
 				<button onClick={ this.onSendClickHandler }>
 					Send
