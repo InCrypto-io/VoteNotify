@@ -25,12 +25,6 @@ class EosApp
 		    console.log(connected);
 
 		    this.scatter = ScatterJS.scatter;
-		    this.scatter.getIdentity({
-			    accounts:[network]
-			})
-				.catch(error => {
-				    console.error(error);
-				});
 			this.eos = this.scatter.eos( network, Eos, {} );
 		    window.ScatterJS = null;
 		});
@@ -38,26 +32,44 @@ class EosApp
 
 	sendVoted(bpAccName, message, onSuccess, onError)
 	{
-		this.eos.contract(this.contractAccName)
-			.then((contract) =>
+		this.scatter.getIdentity({ accounts:[network] })
+			.then((identity) =>
 			{
-				contract.notifynew(bpAccName, message)
-					.then(onSuccess)
+				this.eos.contract(this.contractAccName)
+					.then((contract) =>
+					{
+						contract.notifynew(bpAccName, message)
+							.then(onSuccess)
+							.catch(onError);
+					})
 					.catch(onError);
 			})
-			.catch(onError);
+			.catch((error) =>
+			{
+				console.log('Error from getIdentity: ');
+				console.error(error);
+			});
 	}
 
 	sendUnvoted(bpAccName, message, onSuccess, onError)
 	{
-		this.eos.contract(this.contractAccName)
-			.then((contract) =>
+		this.scatter.getIdentity({ accounts:[network] })
+			.then((identity) =>
 			{
-				contract.notifygone(bpAccName, message)
-					.then(onSuccess)
+				this.eos.contract(this.contractAccName)
+					.then((contract) =>
+					{
+						contract.notifygone(bpAccName, message)
+							.then(onSuccess)
+							.catch(onError);
+					})
 					.catch(onError);
 			})
-			.catch(onError);
+			.catch((error) =>
+			{
+				console.log('Error from getIdentity: ');
+				console.error(error);
+			});
 	}
 }
 
