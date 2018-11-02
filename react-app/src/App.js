@@ -35,12 +35,12 @@ export default class MainPage extends React.Component
 		};
 	}
 
-	handleBpAccChange(e)
+	handleBpAccChange = (e) =>
 	{
 		this.setState({ bpAcc: e.target.value });
 	}
 
-	handleMemoChange(e)
+	handleMemoChange = (e) =>
 	{
 		this.setState({ memo: e.target.value });
 	}
@@ -79,10 +79,11 @@ export default class MainPage extends React.Component
 	{
 		return (
 			<div>
-				<InputField 
+				<InputField
 					label="BP account"
-					onChange={(e) => this.handleBpAccChange(e) }/>
-				<select onChange={this.onChangeHandler} name="vote" value={this.state.vote}>
+					onChange={ this.handleBpAccChange }/>
+				<select onChange={ this.onChangeHandler } name="vote"
+					value={ this.state.vote }>
 					<option value="1">
 						Voted
 					</option>
@@ -90,10 +91,10 @@ export default class MainPage extends React.Component
 						Unvoted
 					</option>
 				</select>
-				<InputField 
+				<InputField
 					label="Memo"
-					onChange={(e) => this.handleMemoChange(e) }/>
-				<button onClick={this.onSendClickHandler}>
+					onChange={ this.handleMemoChange }/>
+				<button onClick={ this.onSendClickHandler }>
 					Send
 				</button>
 			</div>);
