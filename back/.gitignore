@@ -1,0 +1,7 @@
+logs
+*.log
+
+build/Release
+
+node_modules/
+jspm_packages/
