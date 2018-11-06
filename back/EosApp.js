@@ -4,6 +4,7 @@ const DBConnector = require('./DBConnector');
 
 const httpEndpoint = "http://dev.cryptolions.io:38888";
 const chainId = '038f4b0fc8ff18a4f0842a8f0564611f6e96e8535901dd45e43ac8691a1c4dca';
+const systemContractAcc = 'eosio';
 
 class EosApp
 {
@@ -25,27 +26,39 @@ class EosApp
 		return this.eos.getTableRows({code: code,
 	        scope: scope,
 	        table: table,
-	        //table_key: table_key,
 	        lower_bound: lower_bound,
 	        limit: 10000,
 	        json: true});
 	}
 
-	async getVoters(systemContractAcc)
+	async getVoters()
 	{
-		var voters = []
+		var voters = [];
 		var lower_bound = 0;
 		var data = await this.getTable(systemContractAcc, systemContractAcc,
 			'voters', lower_bound);
 		while (data.more)
 		{
-			console.log(data.rows[0]);
 			voters = voters.concat(data.rows);
 			lower_bound = voters[voters.length - 1].owner;
 			data = await this.getTable(systemContractAcc, systemContractAcc,
 				'voters', lower_bound);
 		}
 		return voters;
+	}
+
+	getNewVoted(bp)
+	{
+		return this.cachedVoters.has(bp) ?
+			this.cachedVoters.get(bp).newVoted :
+			[];
+	}
+
+	getNewUnvoted(bp)
+	{
+		return this.cachedVoters.has(bp) ?
+			this.cachedVoters.get(bp).newUnvoted :
+			[];
 	}
 
 	findNewVoted(globalVoters, bp, cb)
@@ -101,6 +114,28 @@ class EosApp
 			}
 			cb(unvoted);
 		});
+	}
+
+	async updateVoters()
+	{
+		var voters = await this.getVoters();
+		var blockProducers = await this.dbc.getBlockProducers();
+		for (var i = 0; i < blockProducers.length; i++)
+		{
+			var bp = blockProducers[i];
+			this.findNewUnvoted(voters, bp.account_name,
+				(votedAccounts) =>
+				{
+					this.findNewVoted(voters, bp.account_name,
+						(unvotedAccounts) =>
+						{
+							this.cachedVoters.set(bp.account_name,
+								{ newVoted: votedAccounts, newUnvoted: unvotedAccounts });
+							console.log(this.cachedVoters);
+							setTimeout(() => { this.updateVoters() }, 1000 * 300);
+						});
+				});
+		}
 	}
 }
 

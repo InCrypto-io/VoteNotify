@@ -1,17 +1,6 @@
 var mysql = require('mysql');
 
 
-const promisify = fn => (...args) => new Promise((resolve, reject) => {
-	fn(...args, (error, value) => {
-		if (error) {
-			reject(error);
-		} else {
-			resolve(value);
-		}
-	});
-});
-
-
 class DBConnector
 {
 	constructor(config)
@@ -21,7 +10,7 @@ class DBConnector
 
 	connect()
 	{
-		this.con.connect(function(err) {
+		this.con.connect((err) => {
 			if (err) throw err;
 			console.log("Connected!");
 		});
@@ -39,13 +28,36 @@ class DBConnector
 		});
 	}
 
+	async getBlockProducers()
+	{
+		var sql = 'SELECT account_name FROM block_producer;';
+		const selectQuery = sql => new Promise((resolve, reject) =>
+		{
+			this.con.query(sql, function (err, result, fields)
+			{
+				if (err) reject(err);
+				resolve(result);
+			});
+		});
+		var result = await selectQuery(sql);
+		var str = JSON.stringify(result);
+		return JSON.parse(str);
+	}
+
 	async checkVote(voter, bp)
 	{
-		const selectQuery = promisify(this.con.query);
 		var sql = 'SELECT voter.account_name ' +
 			'FROM voter INNER JOIN block_producer ON voter.id_bp = block_producer.id ' +
 			'WHERE block_producer.account_name = \'' + bp + '\' and ' +
 			'voter.account_name = \'' + voter + '\';';
+		const selectQuery = sql => new Promise((resolve, reject) =>
+		{
+			this.con.query(sql, function (err, result, fields)
+			{
+				if (err) reject(err);
+				resolve(result);
+			});
+		});
 		var result = await selectQuery(sql);
 		return result.length > 0;
 	}

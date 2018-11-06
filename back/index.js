@@ -2,6 +2,7 @@ const EosApp = require ('./EosApp');
 var express = require('express');
 
 var eosapp = new EosApp.EosApp();
+setTimeout(() => { eosapp.updateVoters() }, 500);
 
 var app = express();
 app.set('eosapp', eosapp);
