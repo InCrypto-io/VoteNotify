@@ -35,7 +35,6 @@ class EosApp
 			lower_bound = voters[voters.length - 1].owner;
 			data = await this.getTable(systemContractAcc, systemContractAcc,
 				'voters', lower_bound);
-			break;
 		}
 		return voters;
 	}
