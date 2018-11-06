@@ -1,4 +1,5 @@
 var Eos = require('eosjs');
+const DBConnector = require('./DBConnector');
 
 
 const httpEndpoint = "http://dev.cryptolions.io:38888";
@@ -8,7 +9,15 @@ class EosApp
 {
 	constructor()
 	{
-		this.eos = Eos({httpEndpoint, chainId});
+		this.eos = Eos({ httpEndpoint, chainId });
+		this.cachedVoters = new Map();
+		this.dbc = new DBConnector.DBConnector({
+			host: "localhost",
+			user: "vadim",
+			password: "Incryptowetrust",
+			database: "EOS_voters"
+		});
+		this.dbc.connect();
 	}
 
 	getTable(code, scope, table, lower_bound)
@@ -37,6 +46,61 @@ class EosApp
 				'voters', lower_bound);
 		}
 		return voters;
+	}
+
+	findNewVoted(globalVoters, bp, cb)
+	{
+		this.dbc.getBpVoters(bp, async (result) =>
+		{
+			var str = JSON.stringify(result);
+			var bpVoters = JSON.parse(str);
+
+			var voted = [];
+			for (var i = 0; i < globalVoters.length; i++)
+			{
+				var idx = globalVoters[i].producers.indexOf(bp);
+				if (idx != -1) //voter has vote for this bp in global table
+				{
+					//if local db isn`t syncronized on this voter
+					//add him to voted list
+					if (!(await this.dbc.checkVote(globalVoters[i].owner, bp)))
+					{
+						voted.push(globalVoters[i].owner);
+					}
+				}
+			}
+			cb(voted);
+		});
+	}
+
+	findNewUnvoted(globalVoters, bp, cb)
+	{
+		this.dbc.getBpVoters(bp, (result) =>
+		{
+			var str = JSON.stringify(result);
+			var bpVoters = JSON.parse(str);
+
+			var unvoted = [];
+			for (var i = 0; i < bpVoters.length; i++)
+			{
+				var voter = globalVoters.find((el, idx, arr) =>
+				{
+					return el.owner == bpVoters[i].account_name;
+				});
+				//votes is in db but is not in global table
+				if (voter === undefined)
+				{
+					this.dbc.removeVoter(voter, bp);
+				}
+				//voter is recorded in local db as voted
+				//but in global table he has no vote for this bp
+				else if (voter.producers.indexOf(bpVoters[i].account_name) == -1)
+				{
+					unvoted.push(bpVoters[i].account_name);
+				}
+			}
+			cb(unvoted);
+		});
 	}
 }
 
