@@ -10,7 +10,7 @@ router.get('/new_voted', function(req, res)
 	}
 	else
 	{
-		res.send(eosapp.getNewVoted(bpAccount));
+		res.json({ accounts: eosapp.getNewVoted(bpAccount) });
 	}
 });
 
@@ -24,7 +24,7 @@ router.get('/new_unvoted', function(req, res)
 	}
 	else
 	{
-		res.send(eosapp.getNewUnvoted(bpAccount));
+		res.json({ accounts: eosapp.getNewUnvoted(bpAccount) });
 	}
 });
 
