@@ -63,7 +63,8 @@ class EosApp
 
 	findNewVoted(globalVoters, bp, cb)
 	{
-		this.dbc.getBpVoters(bp, async (result) =>
+		this.dbc.getBpVoters(bp)
+			.then(async (result) =>
 		{
 			var str = JSON.stringify(result);
 			var bpVoters = JSON.parse(str);
@@ -83,12 +84,14 @@ class EosApp
 				}
 			}
 			cb(voted);
-		});
+		})
+			.catch(console.log);
 	}
 
 	findNewUnvoted(globalVoters, bp, cb)
 	{
-		this.dbc.getBpVoters(bp, (result) =>
+		this.dbc.getBpVoters(bp)
+			.then((result) =>
 		{
 			var str = JSON.stringify(result);
 			var bpVoters = JSON.parse(str);
@@ -103,7 +106,7 @@ class EosApp
 				//votes is in db but is not in global table
 				if (voter === undefined)
 				{
-					this.dbc.removeVoter(voter, bp);
+					this.dbc.removeVoter(bpVoters[i].account_name, bp);
 				}
 				//voter is recorded in local db as voted
 				//but in global table he has no vote for this bp
@@ -113,7 +116,50 @@ class EosApp
 				}
 			}
 			cb(unvoted);
-		});
+		})
+			.catch(console.log);
+	}
+
+	async addLocalNewVoted(bp, accounts)
+	{
+		var voters = await this.dbc.getBpVoters(bp);
+		var str = JSON.stringify(voters);
+		var objects = JSON.parse(str);
+		var newVoters = [];
+		for (var i = 0; i < objects.length; i++)
+		{
+			newVoters.push(objects[i].account_name);
+		}
+		for (var i = 0; i < accounts.length; i++)
+		{
+			if (newVoters.indexOf(accounts[i]) == -1)
+			{
+				newVoters.push(accounts[i]);
+			}
+		}
+		return this.setLocalVoted(bp, newVoters);
+	}
+
+	async removeLocalUnvoted(bp, accounts)
+	{
+		var voters = await this.dbc.getBpVoters(bp);
+		var str = JSON.stringify(voters);
+		var objects = JSON.parse(str);
+		var newVoters = [];
+		for (var i = 0; i < objects.length; i++)
+		{
+			newVoters.push(objects[i].account_name);
+		}
+		newVoters = newVoters.filter(e =>
+			{
+				return accounts.indexOf(e) == -1;
+			});
+		return this.setLocalVoted(bp, newVoters);
+	}
+
+	setLocalVoted(bp, accounts)
+	{
+		return this.dbc.setBpVoters(bp, accounts);
 	}
 
 	async updateVoters()
@@ -124,10 +170,10 @@ class EosApp
 		{
 			var bp = blockProducers[i];
 			this.findNewUnvoted(voters, bp.account_name,
-				(votedAccounts) =>
+				(unvotedAccounts) =>
 				{
 					this.findNewVoted(voters, bp.account_name,
-						(unvotedAccounts) =>
+						(votedAccounts) =>
 						{
 							this.cachedVoters.set(bp.account_name,
 								{ newVoted: votedAccounts, newUnvoted: unvotedAccounts });
