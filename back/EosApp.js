@@ -2,22 +2,17 @@ var Eos = require('eosjs');
 const DBConnector = require('./DBConnector');
 
 
-const httpEndpoint = "http://dev.cryptolions.io:38888";
-const chainId = '038f4b0fc8ff18a4f0842a8f0564611f6e96e8535901dd45e43ac8691a1c4dca';
-const systemContractAcc = 'eosio';
-
 class EosApp
 {
-	constructor()
+	constructor(config)
 	{
+		this.systemContractAcc = config.eos.systemContractAcc;
+		this.systemVotersTable = config.eos.systemVotersTable;
+		var httpEndpoint = config.eos.httpEndpoint;
+		var chainId = config.eos.chainId;
 		this.eos = Eos({ httpEndpoint, chainId });
 		this.cachedVoters = new Map();
-		this.dbc = new DBConnector.DBConnector({
-			host: "localhost",
-			user: "vadim",
-			password: "Incryptowetrust",
-			database: "EOS_voters"
-		});
+		this.dbc = new DBConnector.DBConnector(config.db);
 		this.dbc.connect();
 	}
 
@@ -35,14 +30,14 @@ class EosApp
 	{
 		var voters = [];
 		var lower_bound = 0;
-		var data = await this.getTable(systemContractAcc, systemContractAcc,
-			'voters', lower_bound);
+		var data = await this.getTable(this.systemContractAcc, this.systemContractAcc,
+			this.systemVotersTable, lower_bound);
 		while (data.more)
 		{
 			voters = voters.concat(data.rows);
 			lower_bound = voters[voters.length - 1].owner;
-			data = await this.getTable(systemContractAcc, systemContractAcc,
-				'voters', lower_bound);
+			data = await this.getTable(this.systemContractAcc, this.systemContractAcc,
+				this.systemVotersTable, lower_bound);
 		}
 		return voters;
 	}
@@ -109,7 +104,7 @@ class EosApp
 				}
 				//voter is recorded in local db as voted
 				//but in global table he has no vote for this bp
-				else if (voter.producers.indexOf(bpVoters[i].account_name) == -1)
+				else if (voter.producers.indexOf(bp) == -1)
 				{
 					unvoted.push(bpVoters[i].account_name);
 				}

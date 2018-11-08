@@ -1,8 +1,11 @@
+const fs = require('fs');
 const EosApp = require ('./EosApp');
 var express = require('express');
 var cors = require('cors');
 
-var eosapp = new EosApp.EosApp();
+var config = JSON.parse(fs.readFileSync('config.json','utf8'));
+
+var eosapp = new EosApp.EosApp(config);
 setTimeout(() => { eosapp.updateVoters() }, 500);
 
 var app = express();
