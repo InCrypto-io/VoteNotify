@@ -63,7 +63,7 @@ class EosApp
 
 	findNewVoted(globalVoters, bp, cb)
 	{
-		this.dbc.getBpVoters(bp)
+		 return this.dbc.getBpVoters(bp)
 			.then(async (result) =>
 		{
 			var str = JSON.stringify(result);
@@ -83,14 +83,13 @@ class EosApp
 					}
 				}
 			}
-			cb(voted);
-		})
-			.catch(console.log);
+			return voted;
+		});
 	}
 
 	findNewUnvoted(globalVoters, bp, cb)
 	{
-		this.dbc.getBpVoters(bp)
+		return this.dbc.getBpVoters(bp)
 			.then((result) =>
 		{
 			var str = JSON.stringify(result);
@@ -115,9 +114,8 @@ class EosApp
 					unvoted.push(bpVoters[i].account_name);
 				}
 			}
-			cb(unvoted);
-		})
-			.catch(console.log);
+			return unvoted;
+		});
 	}
 
 	async addLocalNewVoted(bp, accounts)
@@ -169,19 +167,18 @@ class EosApp
 		for (var i = 0; i < blockProducers.length; i++)
 		{
 			var bp = blockProducers[i];
-			this.findNewUnvoted(voters, bp.account_name,
-				(unvotedAccounts) =>
-				{
-					this.findNewVoted(voters, bp.account_name,
-						(votedAccounts) =>
-						{
-							this.cachedVoters.set(bp.account_name,
-								{ newVoted: votedAccounts, newUnvoted: unvotedAccounts });
-							console.log(this.cachedVoters);
-							setTimeout(() => { this.updateVoters() }, 1000 * 300);
-						});
-				});
+			try {
+				var unvotedAccounts = await this.findNewUnvoted(voters, bp.account_name);
+				var votedAccounts = await this.findNewVoted(voters, bp.account_name);
+				this.cachedVoters.set(bp.account_name,
+					{ newVoted: votedAccounts, newUnvoted: unvotedAccounts });
+			}
+			catch (e) {
+				console.error(e);
+			}
 		}
+		console.log(this.cachedVoters);
+		setTimeout(() => { this.updateVoters() }, 1000 * 300);
 	}
 }
 
