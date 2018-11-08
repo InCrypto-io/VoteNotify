@@ -51,14 +51,40 @@ export default class MainPage extends React.Component
 
 	handleSendVotedClick = () =>
 	{
-		this.props.eosapp.sendVoted(this.state.bpAcc, this.state.memo,
-			console.log, console.log);
+		this.props.httpclient.getNewVoted(this.state.bpAcc)
+			.then(async (json) =>
+			{
+				console.log(json);
+				var accounts = json.accounts;
+				for (var i = 0; i < accounts.length; i++)
+				{
+					await this.props.eosapp.sendMemo(this.state.bpAcc,
+						accounts[i], this.state.memo);
+					this.props.httpclient.putNewVoted(this.state.bpAcc, [accounts[i]])
+						.then(console.log)
+						.catch(console.error);
+				}
+			})
+			.catch(console.error);
 	}
 
 	handleSendUnvotedClick = () =>
 	{
-		this.props.eosapp.sendUnvoted(this.state.bpAcc, this.state.memo,
-			console.log, console.log);
+		this.props.httpclient.getNewUnvoted(this.state.bpAcc)
+			.then(async (json) =>
+			{
+				console.log(json);
+				var accounts = json.accounts;
+				for (var i = 0; i < accounts.length; i++)
+				{
+					await this.props.eosapp.sendMemo(this.state.bpAcc,
+						accounts[i], this.state.memo);
+					this.props.httpclient.putNewUnvoted(this.state.bpAcc, [accounts[i]])
+						.then(console.log)
+						.catch(console.error);
+				}
+			})
+			.catch(console.error);
 	}
 
 	onChangeHandler = (e) => {
@@ -84,7 +110,7 @@ export default class MainPage extends React.Component
 		return (
 			<div className="container">
 				<InputField
-					label="BP account" rows={ 1 } maxlength={ 12 }
+					label="BP account" rows={ 1 } maxLength={ 12 }
 					onChange={ this.handleBpAccChange }/>
 				<select onChange={ this.onChangeHandler } className='form-control with-vertical-margin'
 					name="vote" value={ this.state.vote }>
