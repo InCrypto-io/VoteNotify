@@ -27,7 +27,7 @@ class EosApp
 {
 	constructor(config)
 	{
-		this.network = config.eos;
+		this.network = config;
 		this.systemContractAcc = 'eosio';
 		this.tokenContractAcc = 'eosio.token';
 		this.contractAccName = 'myvotenotify'; //TODO set it to valid account name
@@ -51,7 +51,6 @@ class EosApp
 				return this.eos.contract(this.tokenContractAcc)
 					.then((contract) =>
 					{
-						console.log('From contract');
 						return contract.transfer(from, to, "0.0001 EOS", message,
 							{ authorization: [from] });
 					});

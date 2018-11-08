@@ -18,6 +18,30 @@ class HttpClient
 				method: 'GET',
 				mode: 'cors'
 			})
+			.then(function(response) {
+				if (!response.ok) {
+					throw Error(response.statusText);
+				}
+				return response;
+			})
+			.then(response => response.json());
+	}
+
+	getNewVotedCount(bp)
+	{
+		var url = 'http://' + this.host + ':' + this.port +
+			'/api/voters/new_voted_count?bp_account=' + bp;
+		return fetch(url,
+			{
+				method: 'GET',
+				mode: 'cors'
+			})
+			.then(function(response) {
+				if (!response.ok) {
+					throw Error(response.statusText);
+				}
+				return response;
+			})
 			.then(response => response.json());
 	}
 
@@ -29,6 +53,30 @@ class HttpClient
 			{
 				method: 'GET',
 				mode: 'cors'
+			})
+			.then(function(response) {
+				if (!response.ok) {
+					throw Error(response.statusText);
+				}
+				return response;
+			})
+			.then(response => response.json());
+	}
+
+	getNewUnvotedCount(bp)
+	{
+		var url = 'http://' + this.host + ':' + this.port +
+			'/api/voters/new_unvoted_count?bp_account=' + bp;
+		return fetch(url,
+			{
+				method: 'GET',
+				mode: 'cors'
+			})
+			.then(function(response) {
+				if (!response.ok) {
+					throw Error(response.statusText);
+				}
+				return response;
 			})
 			.then(response => response.json());
 	}
@@ -45,6 +93,12 @@ class HttpClient
 				},
 				body: JSON.stringify({ accounts: accounts }),
 				mode: 'cors'
+			})
+			.then(function(response) {
+				if (!response.ok) {
+					throw Error(response.statusText);
+				}
+				return response;
 			});
 	}
 
@@ -60,6 +114,12 @@ class HttpClient
 				},
 				body: JSON.stringify({ accounts: accounts }),
 				mode: 'cors'
+			})
+			.then(function(response) {
+				if (!response.ok) {
+					throw Error(response.statusText);
+				}
+				return response;
 			});
 	}
 }
