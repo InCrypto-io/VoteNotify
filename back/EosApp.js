@@ -181,7 +181,7 @@ class EosApp
 			}
 		}
 		console.log(this.cachedVoters);
-		setTimeout(() => { this.updateVoters() }, 1000 * 300);
+		setTimeout(() => { this.updateVoters() }, 30000);
 	}
 }
 

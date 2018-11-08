@@ -14,6 +14,21 @@ router.get('/new_voted', function(req, res)
 	}
 });
 
+router.get('/new_voted_count', function(req, res)
+{
+	var eosapp = req.app.get('eosapp');
+	var bpAccount = req.query.bp_account;
+	if (bpAccount == null)
+	{
+		res.sendStatus(404);
+	}
+	else
+	{
+		var newVoted = eosapp.getNewVoted(bpAccount);
+		res.json({ count: newVoted.length });
+	}
+});
+
 router.get('/new_unvoted', function(req, res)
 {
 	var eosapp = req.app.get('eosapp');
@@ -25,6 +40,21 @@ router.get('/new_unvoted', function(req, res)
 	else
 	{
 		res.json({ accounts: eosapp.getNewUnvoted(bpAccount) });
+	}
+});
+
+router.get('/new_unvoted_count', function(req, res)
+{
+	var eosapp = req.app.get('eosapp');
+	var bpAccount = req.query.bp_account;
+	if (bpAccount == null)
+	{
+		res.sendStatus(404);
+	}
+	else
+	{
+		var newUnvoted = eosapp.getNewUnvoted(bpAccount);
+		res.json({ count: newUnvoted.length });
 	}
 });
 
