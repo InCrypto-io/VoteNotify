@@ -118,7 +118,7 @@ class EosApp
 		});
 	}
 
-	async addLocalNewVoted(bp, accounts)
+	async markLocalVoted(bp, accounts)
 	{
 		var voters = await this.dbc.getBpVoters(bp);
 		var str = JSON.stringify(voters);
@@ -138,7 +138,7 @@ class EosApp
 		return this.setLocalVoted(bp, newVoters);
 	}
 
-	async removeLocalUnvoted(bp, accounts)
+	async markLocalUnvoted(bp, accounts)
 	{
 		var voters = await this.dbc.getBpVoters(bp);
 		var str = JSON.stringify(voters);
@@ -157,13 +157,21 @@ class EosApp
 
 	setLocalVoted(bp, accounts)
 	{
-		return this.dbc.setBpVoters(bp, accounts);
+		return this.dbc.setBpVoters(bp, accounts)
+			.catch(console.error);
 	}
 
 	async updateVoters()
 	{
-		var voters = await this.getVoters();
-		var blockProducers = await this.dbc.getBlockProducers();
+		var voters = []
+		var blockProducers = []
+		try {
+			voters = await this.getVoters();
+			blockProducers = await this.dbc.getBlockProducers();
+		}
+		catch (e) {
+			console.log(e);
+		}
 		for (var i = 0; i < blockProducers.length; i++)
 		{
 			var bp = blockProducers[i];

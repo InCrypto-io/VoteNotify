@@ -39,7 +39,7 @@ router.put('/new_voted', function(req, res)
 	else
 	{
 		//TODO: check req.body.accounts
-		eosapp.addLocalNewVoted(bpAccount, req.body.accounts)
+		eosapp.markLocalVoted(bpAccount, req.body.accounts)
 			.then(() => res.sendStatus(200))
 			.catch(() => res.sendStatus(500));
 	}
@@ -56,7 +56,7 @@ router.put('/new_unvoted', function(req, res)
 	else
 	{
 		//TODO: check req.body.accounts
-		eosapp.removeLocalUnvoted(bpAccount, req.body.accounts)
+		eosapp.markLocalUnvoted(bpAccount, req.body.accounts)
 			.then(() => res.sendStatus(200))
 			.catch(() => res.sendStatus(500));
 	}
