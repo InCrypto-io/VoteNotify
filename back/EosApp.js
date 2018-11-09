@@ -16,6 +16,7 @@ class EosApp
 		this.dbc.connect();
 	}
 
+	/** @return {Promise} returns rows from table starting from lower_bound */
 	getTable(code, scope, table, lower_bound)
 	{
 		return this.eos.getTableRows({code: code,
@@ -26,6 +27,7 @@ class EosApp
 	        json: true});
 	}
 
+	/** @return {Promise} returns the whole voters table */
 	async getVoters()
 	{
 		var voters = [];
@@ -42,21 +44,39 @@ class EosApp
 		return voters;
 	}
 
+	/**
+	* @param {string} bp Account of block producer to check voters for
+	* @return {array} returns new voted accounts for block producer if it is in database
+	*     otherwise returns empty list
+	*/
 	getNewVoted(bp)
 	{
 		return this.cachedVoters.has(bp) ?
-			this.cachedVoters.get(bp).newVoted :
+			this.cachedVoters.get(bp).newVoters :
 			[];
 	}
 
+	/**
+	* @param {string} bp Account of block producer to check voters for
+	* @return {array} returns new unvoted accounts for block producer if it is in database
+	*     otherwise returns empty list
+	*/
 	getNewUnvoted(bp)
 	{
 		return this.cachedVoters.has(bp) ?
-			this.cachedVoters.get(bp).newUnvoted :
+			this.cachedVoters.get(bp).newUnvoters :
 			[];
 	}
 
-	findNewVoted(globalVoters, bp, cb)
+	/**
+	* Compares local information about voters with given voters table
+	* and returns changes between them
+	* @param {array} globalVoters Eos 'voters' table
+	* @param {string} bp Account of block producer to check voters for
+	* @return {Promise} returns all voters
+	*     who is present in globalVoters but not present in local voter table
+	*/
+	findNewVoted(globalVoters, bp)
 	{
 		 return this.dbc.getBpVoters(bp)
 			.then(async (result) =>
@@ -82,7 +102,15 @@ class EosApp
 		});
 	}
 
-	findNewUnvoted(globalVoters, bp, cb)
+	/**
+	* Compares local information about voters with given voters table
+	* and returns changes between them
+	* @param {array} globalVoters Eos 'voters' table
+	* @param {string} bp Account of block producer to check voters for
+	* @return {Promise} returns all voters
+	*     who is present in local voter table but not present in globalVoters
+	*/
+	findNewUnvoted(globalVoters, bp)
 	{
 		return this.dbc.getBpVoters(bp)
 			.then((result) =>
@@ -113,6 +141,11 @@ class EosApp
 		});
 	}
 
+	/**
+	* Mark accounts that recently voted for bp as notified
+	* @param {string} bp Account of block producer to mark voters for
+	* @param {array} accounts Accounts to mark
+	*/
 	async markLocalVoted(bp, accounts)
 	{
 		var voters = await this.dbc.getBpVoters(bp);
@@ -130,9 +163,25 @@ class EosApp
 				newVoters.push(accounts[i]);
 			}
 		}
-		return this.setLocalVoted(bp, newVoters);
+		await this.setLocalVoted(bp, newVoters);
+		//update cached voters
+		if (this.cachedVoters.has(bp))
+		{
+			var newCachedVoters = this.cachedVoters.get(bp);
+			newCachedVoters.newVoters = newCachedVoters.newVoters.filter(e =>
+			{
+				return accounts.indexOf(e) == -1;
+			});
+			this.cachedVoters.set(bp, newCachedVoters);
+			console.log(this.cachedVoters);
+		}
 	}
 
+	/**
+	* Mark accounts that recently unvoted for bp as notified
+	* @param {string} bp Account of block producer to mark voters for
+	* @param {array} accounts Accounts to mark
+	*/
 	async markLocalUnvoted(bp, accounts)
 	{
 		var voters = await this.dbc.getBpVoters(bp);
@@ -147,7 +196,18 @@ class EosApp
 			{
 				return accounts.indexOf(e) == -1;
 			});
-		return this.setLocalVoted(bp, newVoters);
+		await this.setLocalVoted(bp, newVoters);
+		//update cached voters
+		if (this.cachedVoters.has(bp))
+		{
+			var newCachedVoters = this.cachedVoters.get(bp);
+			newCachedVoters.newUnvoters = newCachedVoters.newUnvoters.filter(e =>
+			{
+				return accounts.indexOf(e) == -1;
+			});
+			this.cachedVoters.set(bp, newCachedVoters);
+			console.log(this.cachedVoters);
+		}
 	}
 
 	setLocalVoted(bp, accounts)
@@ -156,6 +216,11 @@ class EosApp
 			.catch(console.error);
 	}
 
+	/**
+	* Gets voters from eos table and checks if there are changes
+	*     comparing to local table of voters.
+	*     After that runs itself on timer.
+	*/
 	async updateVoters()
 	{
 		var voters = []
@@ -174,14 +239,14 @@ class EosApp
 				var unvotedAccounts = await this.findNewUnvoted(voters, bp.account_name);
 				var votedAccounts = await this.findNewVoted(voters, bp.account_name);
 				this.cachedVoters.set(bp.account_name,
-					{ newVoted: votedAccounts, newUnvoted: unvotedAccounts });
+					{ newVoters: votedAccounts, newUnvoters: unvotedAccounts });
 			}
 			catch (e) {
 				console.error(e);
 			}
 		}
 		console.log(this.cachedVoters);
-		setTimeout(() => { this.updateVoters() }, 30000);
+		setTimeout(() => { this.updateVoters() }, 60000);
 	}
 }
 
