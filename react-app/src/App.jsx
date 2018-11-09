@@ -237,13 +237,14 @@ export default class MainPage extends React.Component
 				<div className="form-inline form-group with-vertical-margin custom-container">
 					<label>Max transactions:</label>
 					<NumericInput className="form-control"
-						min={1} max={1000}
+						min={ 1 } max={ 1000 } value={ this.state.maxNotifications }
 						onChange={ this.handleMaxNotificationsChange } />
 				</div>
 				<InputField
 					label="BP account" rows={ 1 } maxlength={ 12 }
 					onChange={ this.handleBpAccChange }/>
-				<select onChange={ this.onChangeHandler } className='form-control with-vertical-margin'
+				<select onChange={ this.onChangeHandler }
+					className='form-control with-vertical-margin'
 					name="vote" value={ this.state.vote }>
 					<option value="1">Voted</option>
 					<option value="0">Unvoted</option>
@@ -254,10 +255,10 @@ export default class MainPage extends React.Component
 				<button onClick={ this.onSendClickHandler }>
 					Send
 				</button>
-				<Modal show={this.state.modalShow}
-					closeOnOuterClick={true}
-					onClose={this.closeModal}
-					transitionSpeed={10}
+				<Modal show={ this.state.modalShow }
+					closeOnOuterClick={ true }
+					onClose={ this.closeModal }
+					transitionSpeed={ 10 }
 					>
 					<div>{this.state.modalInfo}</div>
 				</Modal>

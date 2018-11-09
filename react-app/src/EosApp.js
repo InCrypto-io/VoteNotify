@@ -30,6 +30,7 @@ class EosApp
 		this.network = config;
 		this.systemContractAcc = 'eosio';
 		this.tokenContractAcc = 'eosio.token';
+		this.amount = '0.0001 EOS';
 		this.contractAccName = 'myvotenotify'; //TODO set it to valid account name
 		ScatterJS.scatter.connect("Put_Your_App_Name_Here").then(connected => {
 		    // User does not have Scatter Desktop, Mobile or Classic installed.
@@ -51,7 +52,7 @@ class EosApp
 				return this.eos.contract(this.tokenContractAcc)
 					.then((contract) =>
 					{
-						return contract.transfer(from, to, "0.0001 EOS", message,
+						return contract.transfer(from, to, this.amount, message,
 							{ authorization: [from] });
 					});
 			});
