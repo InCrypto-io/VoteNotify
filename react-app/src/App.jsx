@@ -51,6 +51,14 @@ export default class MainPage extends React.Component
 			vote: "1",
 			bpAcc: '',
 			memo: '',
+			/*newVotedInfo: {
+				count: 0,
+				isLoading: false
+			},
+			newUnvotedInfo: {
+				count: 0,
+				isLoading: false
+			},*/
 			newVoted: 0,
 			newUnvoted: 0,
 			newVotedLoading: false,
@@ -108,11 +116,13 @@ export default class MainPage extends React.Component
 		this.props.httpclient.getNewVoted(this.state.bpAcc)
 			.then(async (json) =>
 			{
+				this.setState({newVotedLoading: true});
 				console.log(json);
 				var accounts = json.accounts;
 				if (accounts.length == 0)
 				{
 					this.showModal('There is no recently voted accounts.');
+					this.setState({newVotedLoading: false});
 					return;
 				}
 				var sendCount = Math.min(accounts.length, maxNotifications);
@@ -123,7 +133,7 @@ export default class MainPage extends React.Component
 						await this.props.eosapp.sendMemo(this.state.bpAcc,
 							accounts[i], this.state.memo);
 						try {
-							this.props.httpclient.putNewVoted(this.state.bpAcc, [accounts[i]]);
+							var response = await this.props.httpclient.putNewVoted(this.state.bpAcc, [accounts[i]]);
 							successfullySent += 1;
 						}
 						catch (error) {
@@ -135,10 +145,12 @@ export default class MainPage extends React.Component
 					}
 				}
 				this.showModal('Successfully sent: ' + successfullySent.toString());
+				this.setState({newVotedLoading: false});
 			})
 			.catch((error) =>
 			{
 				this.showModal('Failed to get info from server: ' + error.toString());
+				this.setState({newVotedLoading: false});
 			});
 	}
 
@@ -147,11 +159,13 @@ export default class MainPage extends React.Component
 		this.props.httpclient.getNewUnvoted(this.state.bpAcc)
 			.then(async (json) =>
 			{
+				this.setState({newUnvotedLoading: true});
 				console.log(json);
 				var accounts = json.accounts;
 				if (accounts.length == 0)
 				{
 					this.showModal('There is no recently unvoted accounts.');
+					this.setState({newUnvotedLoading: false});
 					return;
 				}
 				var sendCount = Math.min(accounts.length, maxNotifications);
@@ -174,10 +188,12 @@ export default class MainPage extends React.Component
 					}
 				}
 				this.showModal('Successfully sent: ' + successfullySent.toString());
+				this.setState({newUnvotedLoading: false});
 			})
 			.catch((error) =>
 			{
 				this.showModal('Failed to get info from server: ' + error.toString());
+				this.setState({newUnvotedLoading: false});
 			});
 	}
 
