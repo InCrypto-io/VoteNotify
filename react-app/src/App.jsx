@@ -6,19 +6,14 @@ import './index.css';
 
 class InputField extends React.Component
 {
-	constructor(props)
-	{
-		super(props);
-	}
-
 	render()
 	{
 		return (
-			<div className="form-group with-vertical-margin">
+			<div className="form-inline form-group with-vertical-margin custom-container">
 				<label>
 					{ this.props.label }
 				</label>		
-				<textarea className='form-control'
+				<textarea className='form-control width-80percents-override'
 					rows={ this.props.rows }
 					maxlength={ this.props.maxlength }
 					placeholder=""
@@ -40,7 +35,7 @@ export default class MainPage extends React.Component
 			memo: '',
 			newVoted: 0,
 			newUnvoted: 0,
-			maxNotifications: 1,
+			maxNotifications: 100,
 			modalInfo: "",
 			modalShow: false
 		};
@@ -54,7 +49,7 @@ export default class MainPage extends React.Component
 
 	closeModal = () =>
 	{
-		this.setState({modalShow: false});
+		this.setState({modalInfo: "", modalShow: false});
 	}
 
 	async askServer()
@@ -95,25 +90,31 @@ export default class MainPage extends React.Component
 			{
 				console.log(json);
 				var accounts = json.accounts;
+				if (accounts.length == 0)
+				{
+					this.showModal('There is no recently voted accounts.');
+					return;
+				}
 				var sendCount = Math.min(accounts.length, maxNotifications);
+				var successfullySent = 0;
 				for (var i = 0; i < sendCount; i++)
 				{
 					try {
 						await this.props.eosapp.sendMemo(this.state.bpAcc,
 							accounts[i], this.state.memo);
-						this.props.httpclient.putNewVoted(this.state.bpAcc, [accounts[i]])
-							.then(console.log)
-							.catch((error) =>
-							{
-								this.showModal('Failed to send notified accounts to server: ' +
-									error.toString());
-							});
+						try {
+							this.props.httpclient.putNewVoted(this.state.bpAcc, [accounts[i]]);
+							successfullySent += 1;
+						}
+						catch (error) {
+							console.log(error);
+						};
 					}
 					catch (e) {
 						console.error(e);
-						this.showModal('Failed to send memo: ' + e.toString());
 					}
 				}
+				this.showModal('Successfully sent: ' + successfullySent.toString());
 			})
 			.catch((error) =>
 			{
@@ -128,25 +129,31 @@ export default class MainPage extends React.Component
 			{
 				console.log(json);
 				var accounts = json.accounts;
+				if (accounts.length == 0)
+				{
+					this.showModal('There is no recently unvoted accounts.');
+					return;
+				}
 				var sendCount = Math.min(accounts.length, maxNotifications);
+				var successfullySent = 0;
 				for (var i = 0; i < sendCount; i++)
 				{
 					try {
 						await this.props.eosapp.sendMemo(this.state.bpAcc,
 							accounts[i], this.state.memo);
-						this.props.httpclient.putNewUnvoted(this.state.bpAcc, [accounts[i]])
-							.then(console.log)
-							.catch((error) =>
-							{
-								this.showModal('Failed to send notified accounts to server: ' +
-									error.toString());
-							});
+						try {
+							var response = await this.props.httpclient.putNewUnvoted(this.state.bpAcc, [accounts[i]]);
+							successfullySent += 1;
+						}
+						catch (error) {
+							console.log(error);
+						};
 					}
 					catch (e) {
 						console.error(e);
-						this.showModal('Failed to send memo: ' + e.toString());
 					}
 				}
+				this.showModal('Successfully sent: ' + successfullySent.toString());
 			})
 			.catch((error) =>
 			{
@@ -162,6 +169,17 @@ export default class MainPage extends React.Component
 
 	onSendClickHandler = async () =>
 	{
+		if (this.state.bpAcc == "")
+		{
+			this.showModal('Block producer account name must be filled.');
+			return;
+		}
+		else if (this.state.memo == "")
+		{
+			this.showModal('Memo must be filled.');
+			return;
+		}
+
 		if (this.state.vote === "1")
 		{
 			this.handleSendVotedClick(this.state.maxNotifications);
@@ -177,15 +195,13 @@ export default class MainPage extends React.Component
 		return (
 			<div className="container">
 				<div className="form-group with-vertical-margin">
-					<label>
-						{ 'Max transactions:' }
-					</label>
+					<label>Max transactions:</label>
 				</div>
 				<hr/>
 				<div className="form-group with-vertical-margin">
 					<NumericInput className="form-control"
 						min={1} max={1000}
-						onChange={ this.handleMaxNotificationsChange }/>
+						onChange={ this.handleMaxNotificationsChange } />
 				</div>
 				<div className="form-control with-vertical-margin">
 					<label>
@@ -202,12 +218,8 @@ export default class MainPage extends React.Component
 					onChange={ this.handleBpAccChange }/>
 				<select onChange={ this.onChangeHandler } className='form-control with-vertical-margin'
 					name="vote" value={ this.state.vote }>
-					<option value="1">
-						Voted
-					</option>
-					<option value="0">
-						Unvoted
-					</option>
+					<option value="1">Voted</option>
+					<option value="0">Unvoted</option>
 				</select>
 				<InputField
 					label="Memo" rows={ 3 } maxlength={ 250 }
