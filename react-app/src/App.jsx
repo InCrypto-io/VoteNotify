@@ -2,6 +2,7 @@ import React from 'react';
 import NumericInput from 'react-numeric-input';
 import Modal, {closeStyle} from 'simple-react-modal';
 import ReactLoading from 'react-loading';
+import logo from './atticlab.png';
 import './index.css';
 
 
@@ -41,6 +42,8 @@ class InputField extends React.Component
 	}
 }
 
+
+const eosValidSymbols = '.12345abcdefghijklmnopqrstuvwxyz';
 
 export default class MainPage extends React.Component
 {
@@ -85,14 +88,39 @@ export default class MainPage extends React.Component
 		var newVoted = 0;
 		var newUnvoted = 0;
 		try {
-			newVoted = (await this.props.httpclient.getNewVotedCount(this.state.bpAcc)).count;
-			newUnvoted = (await this.props.httpclient.getNewUnvotedCount(this.state.bpAcc)).count;
+			if (this.isBpAccValid())
+			{
+				newVoted = (await this.props.httpclient.getNewVotedCount(this.state.bpAcc)).count;
+				newUnvoted = (await this.props.httpclient.getNewUnvotedCount(this.state.bpAcc)).count;
+			}
 		}
 		catch (e) {
 			console.log(e);
 		}
 		this.setState({ newVoted: newVoted, newUnvoted: newUnvoted });
 		setTimeout(() => { this.askServer() }, 3000);
+	}
+
+	isBpAccValid()
+	{
+		if (this.state.bpAcc == "")
+		{
+			return false;
+		}
+		var valid = true;
+		for (var i = 0; i < this.state.bpAcc.length; i++)
+		{
+			if (!eosValidSymbols.includes(this.state.bpAcc.charAt(i)))
+			{
+				valid = false;
+			}
+		}
+		return valid;
+	}
+
+	isMemoValid()
+	{
+		return this.state.memo != "";
 	}
 
 	handleBpAccChange = (e) =>
@@ -205,12 +233,13 @@ export default class MainPage extends React.Component
 
 	onSendClickHandler = async () =>
 	{
-		if (this.state.bpAcc == "")
+		if (!this.isBpAccValid())
 		{
-			this.showModal('Block producer account name must be filled.');
+			this.showModal('Block producer account name must be not empty ' +
+				'and can contain only \'' + eosValidSymbols + '\' symbols.');
 			return;
 		}
-		else if (this.state.memo == "")
+		else if (!this.isMemoValid())
 		{
 			this.showModal('Memo must be filled.');
 			return;
@@ -230,6 +259,7 @@ export default class MainPage extends React.Component
 	{
 		return (
 			<div className="container">
+				<img src={logo} className="center" />
 				<Info value={ 'New voted: ' + this.state.newVoted.toString() }
 					loading={ this.state.newVotedLoading } />
 				<Info value={ 'New unvoted: ' + this.state.newUnvoted.toString() }
