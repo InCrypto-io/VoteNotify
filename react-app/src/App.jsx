@@ -1,7 +1,25 @@
 import React from 'react';
 import NumericInput from 'react-numeric-input';
-import Modal, {closeStyle} from 'simple-react-modal'
+import Modal, {closeStyle} from 'simple-react-modal';
+import ReactLoading from 'react-loading';
 import './index.css';
+
+
+class Info extends React.Component
+{
+	render()
+	{
+		return (
+			<div className="form-inline form-group with-vertical-margin"
+				style={{lineHeight: '1.1em'}}>
+				<label> { this.props.value } </label>
+				{(this.props.loading) ?
+					<ReactLoading className="ml-2" type="spin" color="gray"
+						height={20} width={20} /> :
+					null}
+			</div>);
+	}
+}
 
 
 class InputField extends React.Component
@@ -35,6 +53,8 @@ export default class MainPage extends React.Component
 			memo: '',
 			newVoted: 0,
 			newUnvoted: 0,
+			newVotedLoading: false,
+			newUnvotedLoading: false,
 			maxNotifications: 100,
 			modalInfo: "",
 			modalShow: false
@@ -194,24 +214,15 @@ export default class MainPage extends React.Component
 	{
 		return (
 			<div className="container">
-				<div className="form-group with-vertical-margin">
+				<Info value={ 'New voted: ' + this.state.newVoted.toString() }
+					loading={ this.state.newVotedLoading } />
+				<Info value={ 'New unvoted: ' + this.state.newUnvoted.toString() }
+					loading={ this.state.newUnvotedLoading } />
+				<div className="form-inline form-group with-vertical-margin custom-container">
 					<label>Max transactions:</label>
-				</div>
-				<hr/>
-				<div className="form-group with-vertical-margin">
 					<NumericInput className="form-control"
 						min={1} max={1000}
 						onChange={ this.handleMaxNotificationsChange } />
-				</div>
-				<div className="form-control with-vertical-margin">
-					<label>
-						{ 'New voted: ' + this.state.newVoted.toString() }
-					</label>
-				</div>
-				<div className="form-control with-vertical-margin">
-					<label>
-						{ 'New unvoted: ' + this.state.newUnvoted.toString() }
-					</label>
 				</div>
 				<InputField
 					label="BP account" rows={ 1 } maxlength={ 12 }
