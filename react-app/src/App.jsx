@@ -84,6 +84,16 @@ export default class MainPage extends React.Component
 		this.setState({ modalInfo: "", modalShow: false });
 	}
 
+	toggleNewVotedLoading = (show) =>
+	{
+		this.setState({ newVotedLoading: show });
+	}
+
+	toggleNewUnvotedLoading = (show) =>
+	{
+		this.setState({ newUnvotedLoading: show});
+	}
+
 	async askServer()
 	{
 		var newVoted = 0;
@@ -139,18 +149,18 @@ export default class MainPage extends React.Component
 			this.setState({ maxNotifications: valueAsNumber });
 	}
 
-	handleSendVotedClick = () =>
+	handleSendClick = (getAccounts, putAccounts, toggleLoading) =>
 	{
-		this.props.httpclient.getNewVoted(this.state.bpAcc)
+		getAccounts(this.state.bpAcc)
 			.then(async (json) =>
 			{
-				this.setState({ newVotedLoading: true });
+				toggleLoading(true);
 				console.log(json);
 				var accounts = json.accounts;
 				if (accounts.length === 0)
 				{
-					this.showModal('There is no recently voted accounts.');
-					this.setState({ newVotedLoading: false });
+					this.showModal('There is no accounts to notify.');
+					toggleLoading(false);
 					return;
 				}
 				var sendCount = Math.min(accounts.length, this.state.maxNotifications);
@@ -161,7 +171,7 @@ export default class MainPage extends React.Component
 						await this.props.eosapp.sendMemo(this.state.bpAcc,
 							accounts[i], this.state.memo);
 						try {
-							var response = await this.props.httpclient.putNewVoted(this.state.bpAcc, [accounts[i]]);
+							var response = await putAccounts(this.state.bpAcc, [accounts[i]]);
 							successfullySent += 1;
 						}
 						catch (error) {
@@ -173,55 +183,12 @@ export default class MainPage extends React.Component
 					}
 				}
 				this.showModal('Successfully sent: ' + successfullySent.toString());
-				this.setState({ newVotedLoading: false });
+				toggleLoading(false);
 			})
 			.catch((error) =>
 			{
 				this.showModal('Failed to get info from server: ' + error.toString());
-				this.setState({ newVotedLoading: false });
-			});
-	}
-
-	handleSendUnvotedClick = () =>
-	{
-		this.props.httpclient.getNewUnvoted(this.state.bpAcc)
-			.then(async (json) =>
-			{
-				this.setState({ newUnvotedLoading: true });
-				console.log(json);
-				var accounts = json.accounts;
-				if (accounts.length === 0)
-				{
-					this.showModal('There is no recently unvoted accounts.');
-					this.setState({ newUnvotedLoading: false });
-					return;
-				}
-				var sendCount = Math.min(accounts.length, this.state.maxNotifications);
-				var successfullySent = 0;
-				for (var i = 0; i < sendCount; i++)
-				{
-					try {
-						await this.props.eosapp.sendMemo(this.state.bpAcc,
-							accounts[i], this.state.memo);
-						try {
-							var response = await this.props.httpclient.putNewUnvoted(this.state.bpAcc, [accounts[i]]);
-							successfullySent += 1;
-						}
-						catch (error) {
-							console.log(error);
-						};
-					}
-					catch (e) {
-						console.error(e);
-					}
-				}
-				this.showModal('Successfully sent: ' + successfullySent.toString());
-				this.setState({ newUnvotedLoading: false });
-			})
-			.catch((error) =>
-			{
-				this.showModal('Failed to get info from server: ' + error.toString());
-				this.setState({ newUnvotedLoading: false });
+				toggleLoading(false);
 			});
 	}
 
@@ -247,11 +214,15 @@ export default class MainPage extends React.Component
 
 		if (this.state.vote === "1")
 		{
-			this.handleSendVotedClick();
+			this.handleSendClick(this.props.httpclient.getNewVoted,
+				this.props.httpclient.putNewVoted,
+				this.toggleNewVotedLoading);
 		}
 		else if (this.state.vote === "0")
 		{
-			this.handleSendUnvotedClick();
+			this.handleSendClick(this.props.httpclient.getNewUnvoted,
+				this.props.httpclient.putNewUnvoted,
+				this.toggleNewUnvotedLoading);
 		}
 	}
 

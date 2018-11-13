@@ -9,7 +9,7 @@ class HttpClient
 		this.port = config.port;
 	}
 
-	getNewVoted(bp)
+	getNewVoted = (bp) =>
 	{
 		var url = 'http://' + this.host + ':' + this.port +
 			'/api/voters/new_voted?bp_account=' + bp;
@@ -27,7 +27,7 @@ class HttpClient
 			.then(response => response.json());
 	}
 
-	getNewVotedCount(bp)
+	getNewVotedCount = (bp) =>
 	{
 		var url = 'http://' + this.host + ':' + this.port +
 			'/api/voters/new_voted_count?bp_account=' + bp;
@@ -45,7 +45,7 @@ class HttpClient
 			.then(response => response.json());
 	}
 
-	getNewUnvoted(bp)
+	getNewUnvoted = (bp) =>
 	{
 		var url = 'http://' + this.host + ':' + this.port +
 			'/api/voters/new_unvoted?bp_account=' + bp;
@@ -63,7 +63,7 @@ class HttpClient
 			.then(response => response.json());
 	}
 
-	getNewUnvotedCount(bp)
+	getNewUnvotedCount = (bp) =>
 	{
 		var url = 'http://' + this.host + ':' + this.port +
 			'/api/voters/new_unvoted_count?bp_account=' + bp;
@@ -81,7 +81,7 @@ class HttpClient
 			.then(response => response.json());
 	}
 
-	putNewVoted(bp, accounts)
+	putNewVoted = (bp, accounts) =>
 	{
 		var url = 'http://' + this.host + ':' + this.port +
 			'/api/voters/new_voted?bp_account=' + bp;
@@ -102,7 +102,7 @@ class HttpClient
 			});
 	}
 
-	putNewUnvoted(bp, accounts)
+	putNewUnvoted = (bp, accounts) =>
 	{
 		var url = 'http://' + this.host + ':' + this.port +
 			'/api/voters/new_unvoted?bp_account=' + bp;
