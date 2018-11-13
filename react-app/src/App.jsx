@@ -1,8 +1,7 @@
 import React from 'react';
 import NumericInput from 'react-numeric-input';
-import Modal, {closeStyle} from 'simple-react-modal';
+import ReactModal from 'react-modal';
 import ReactLoading from 'react-loading';
-import logo from './atticlab.png';
 import './index.css';
 
 
@@ -10,12 +9,14 @@ class Info extends React.Component
 {
 	render()
 	{
+		var bg = (this.props.good) ? "bg-success" : "bg-danger";
 		return (
-			<div className="form-inline form-group with-vertical-margin"
-				style={{lineHeight: '1.1em'}}>
-				<label> { this.props.value } </label>
+			<div className={"align-items-center d-flex flex-grow-1 form-group form-inline " +
+				"justify-content-center mb-0 mt-0 p-3 with-vertical-margin with-line-height " + bg}
+				>
+				<label className="color-white"> { this.props.value } </label>
 				{(this.props.loading) ?
-					<ReactLoading className="ml-2" type="spin" color="gray"
+					<ReactLoading className="ml-2" type="spin" color="white"
 						height={20} width={20} /> :
 					null}
 			</div>);
@@ -28,11 +29,11 @@ class InputField extends React.Component
 	render()
 	{
 		return (
-			<div className="form-inline form-group with-vertical-margin custom-container">
+			<div className="form-group with-vertical-margin">
 				<label>
 					{ this.props.label }
 				</label>		
-				<textarea className='form-control width-80percents-override'
+				<textarea className='form-control'
 					rows={ this.props.rows }
 					maxlength={ this.props.maxlength }
 					placeholder=""
@@ -75,12 +76,12 @@ export default class MainPage extends React.Component
 
 	showModal = (info) =>
 	{
-		this.setState({modalInfo: info, modalShow: true});
+		this.setState({ modalInfo: info, modalShow: true });
 	}
 
 	closeModal = () =>
 	{
-		this.setState({modalInfo: "", modalShow: false});
+		this.setState({ modalInfo: "", modalShow: false });
 	}
 
 	async askServer()
@@ -95,7 +96,6 @@ export default class MainPage extends React.Component
 			}
 		}
 		catch (e) {
-			console.log(e);
 		}
 		this.setState({ newVoted: newVoted, newUnvoted: newUnvoted });
 		setTimeout(() => { this.askServer() }, 3000);
@@ -103,7 +103,7 @@ export default class MainPage extends React.Component
 
 	isBpAccValid()
 	{
-		if (this.state.bpAcc == "")
+		if (this.state.bpAcc === "")
 		{
 			return false;
 		}
@@ -120,7 +120,7 @@ export default class MainPage extends React.Component
 
 	isMemoValid()
 	{
-		return this.state.memo != "";
+		return this.state.memo !== "";
 	}
 
 	handleBpAccChange = (e) =>
@@ -136,24 +136,24 @@ export default class MainPage extends React.Component
 	handleMaxNotificationsChange = (valueAsNumber, valueAsString, element) =>
 	{
 		if (valueAsNumber !== null)
-			this.setState({maxNotifications: valueAsNumber});
+			this.setState({ maxNotifications: valueAsNumber });
 	}
 
-	handleSendVotedClick = (maxNotifications) =>
+	handleSendVotedClick = () =>
 	{
 		this.props.httpclient.getNewVoted(this.state.bpAcc)
 			.then(async (json) =>
 			{
-				this.setState({newVotedLoading: true});
+				this.setState({ newVotedLoading: true });
 				console.log(json);
 				var accounts = json.accounts;
-				if (accounts.length == 0)
+				if (accounts.length === 0)
 				{
 					this.showModal('There is no recently voted accounts.');
-					this.setState({newVotedLoading: false});
+					this.setState({ newVotedLoading: false });
 					return;
 				}
-				var sendCount = Math.min(accounts.length, maxNotifications);
+				var sendCount = Math.min(accounts.length, this.state.maxNotifications);
 				var successfullySent = 0;
 				for (var i = 0; i < sendCount; i++)
 				{
@@ -173,30 +173,30 @@ export default class MainPage extends React.Component
 					}
 				}
 				this.showModal('Successfully sent: ' + successfullySent.toString());
-				this.setState({newVotedLoading: false});
+				this.setState({ newVotedLoading: false });
 			})
 			.catch((error) =>
 			{
 				this.showModal('Failed to get info from server: ' + error.toString());
-				this.setState({newVotedLoading: false});
+				this.setState({ newVotedLoading: false });
 			});
 	}
 
-	handleSendUnvotedClick = (maxNotifications) =>
+	handleSendUnvotedClick = () =>
 	{
 		this.props.httpclient.getNewUnvoted(this.state.bpAcc)
 			.then(async (json) =>
 			{
-				this.setState({newUnvotedLoading: true});
+				this.setState({ newUnvotedLoading: true });
 				console.log(json);
 				var accounts = json.accounts;
-				if (accounts.length == 0)
+				if (accounts.length === 0)
 				{
 					this.showModal('There is no recently unvoted accounts.');
-					this.setState({newUnvotedLoading: false});
+					this.setState({ newUnvotedLoading: false });
 					return;
 				}
-				var sendCount = Math.min(accounts.length, maxNotifications);
+				var sendCount = Math.min(accounts.length, this.state.maxNotifications);
 				var successfullySent = 0;
 				for (var i = 0; i < sendCount; i++)
 				{
@@ -216,12 +216,12 @@ export default class MainPage extends React.Component
 					}
 				}
 				this.showModal('Successfully sent: ' + successfullySent.toString());
-				this.setState({newUnvotedLoading: false});
+				this.setState({ newUnvotedLoading: false });
 			})
 			.catch((error) =>
 			{
 				this.showModal('Failed to get info from server: ' + error.toString());
-				this.setState({newUnvotedLoading: false});
+				this.setState({ newUnvotedLoading: false });
 			});
 	}
 
@@ -247,25 +247,28 @@ export default class MainPage extends React.Component
 
 		if (this.state.vote === "1")
 		{
-			this.handleSendVotedClick(this.state.maxNotifications);
+			this.handleSendVotedClick();
 		}
 		else if (this.state.vote === "0")
 		{
-			this.handleSendUnvotedClick(this.state.maxNotifications);
+			this.handleSendUnvotedClick();
 		}
 	}
 
 	render()
 	{
 		return (
-			<div className="container">
-				<img src={logo} className="center" />
-				<Info value={ 'New voted: ' + this.state.newVoted.toString() }
+			<div className="container with-min-width-300">
+				<div className="d-flex">
+					<Info value={ 'New voted: ' + this.state.newVoted.toString() }
+					good={ true }
 					loading={ this.state.newVotedLoading } />
 				<Info value={ 'New unvoted: ' + this.state.newUnvoted.toString() }
+					good={ false }
 					loading={ this.state.newUnvotedLoading } />
-				<div className="form-inline form-group with-vertical-margin custom-container">
-					<label>Max transactions:</label>
+				</div>
+				<div className="form-group with-vertical-margin">
+					<label>Max transactions</label>
 					<NumericInput className="form-control"
 						min={ 1 } max={ 1000 } value={ this.state.maxNotifications }
 						onChange={ this.handleMaxNotificationsChange } />
@@ -280,18 +283,34 @@ export default class MainPage extends React.Component
 					<option value="0">Unvoted</option>
 				</select>
 				<InputField
-					label="Memo" rows={ 3 } maxlength={ 250 }
+					label="Memo" rows={ 4 } maxlength={ 250 }
 					onChange={ this.handleMemoChange }/>
-				<button onClick={ this.onSendClickHandler }>
+				<button onClick={ this.onSendClickHandler }
+					className="send-button">
 					Send
 				</button>
-				<Modal show={ this.state.modalShow }
-					closeOnOuterClick={ true }
-					onClose={ this.closeModal }
-					transitionSpeed={ 10 }
-					>
-					<div>{this.state.modalInfo}</div>
-				</Modal>
+				<ReactModal
+					isOpen={ this.state.modalShow }
+					onRequestClose={ this.closeModal }
+					closeTimeoutMS={ 0 }
+					shouldCloseOnEsc={ true }
+					portalClassName="ReactModalPortal"
+					style={{
+				    content: {
+				      position: 'absolute',
+				      top: '40%',
+				      left: '30%',
+				      right: '30%',
+				      bottom: '40%'
+				    }
+				  }}
+				>
+				<div>
+					<p>{ this.state.modalInfo }</p>
+					<button className='close-button'
+						onClick={ this.closeModal }>Close</button>
+				</div>
+				</ReactModal>
 			</div>);
 	}
 }

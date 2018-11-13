@@ -1,39 +1,29 @@
-button {
-    width: 100%;
-    background-color: #4CAF50;
-    color: white;
-    padding: 14px 20px;
-    margin: 8px 0;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+html,
+body{
+    height: 100%;
 }
 
-button:hover {
-    background-color: #45a049;
+#root {
+    width: 50%;
+
+}
+@media (min-width: 1000px){
+    #root {
+        width: 40%;
+    }
+}
+@media (min-width: 1500px){
+    #root {
+        width: 30%;
+    }
 }
 
 label {
-    font-weight: bold;
     display: block;
-    float: left;
 }
 
 textarea {
   resize: none;
-}
-
-.custom-container {
-  display: flex;
-  justify-content: space-between;
-}
-
-.width-80percents-override {
-    width: 80% !important;
-}
-
-.with-vertical-margin {
-    margin-top: 30px;
 }
 
 .center {
@@ -41,4 +31,41 @@ textarea {
     margin-left: auto;
     margin-right: auto;
     width: auto;
+}
+
+.close-button {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    margin: 10px;
+}
+
+.color-white {
+    color: white;
+}
+
+.send-button {
+    width: 100%;
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+}
+
+.send-button:hover {
+    background-color: #45a049;
+}
+
+.with-line-height {
+    line-height: 1.1em;
+}
+
+.with-vertical-margin {
+    margin-top: 30px;
+}
+
+.with-min-width-300 {
+    min-width: 300px;
 }
