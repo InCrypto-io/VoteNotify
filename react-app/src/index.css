@@ -1,5 +1,5 @@
 html,
-body{
+body {
     height: 100%;
 }
 
@@ -7,12 +7,12 @@ body{
     width: 50%;
 
 }
-@media (min-width: 1000px){
+@media (min-width: 1000px) {
     #root {
         width: 40%;
     }
 }
-@media (min-width: 1500px){
+@media (min-width: 1500px) {
     #root {
         width: 30%;
     }
@@ -20,10 +20,19 @@ body{
 
 label {
     display: block;
+    font-weight: normal;
 }
 
 textarea {
   resize: none;
+}
+
+.bg-green {
+    background-color: #4CAF50 !important;
+}
+
+.bg-red {
+    background-color: #D13838 !important;
 }
 
 .center {
@@ -33,22 +42,26 @@ textarea {
     width: auto;
 }
 
-.close-button {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    margin: 10px;
-}
-
 .color-white {
     color: white;
+}
+
+.font-size-1-2em {
+    font-size: 1.2em;
+}
+
+.margin-20 {
+    margin: 20px;
+}
+
+.padding-14px-20px {
+    padding: 14px 20px;
 }
 
 .send-button {
     width: 100%;
     background-color: #4CAF50;
     color: white;
-    padding: 14px 20px;
     margin: 8px 0;
     border: none;
     cursor: pointer;

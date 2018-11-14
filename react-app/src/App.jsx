@@ -1,20 +1,22 @@
 import React from 'react';
 import NumericInput from 'react-numeric-input';
-import ReactModal from 'react-modal';
+import { Modal, Button } from 'react-bootstrap';
 import ReactLoading from 'react-loading';
 import './index.css';
+import './flex.css';
 
 
 class Info extends React.Component
 {
 	render()
 	{
-		var bg = (this.props.good) ? "bg-success" : "bg-danger";
+		var bg = (this.props.good) ? "bg-green" : "bg-red";
 		return (
 			<div className={"align-items-center d-flex flex-grow-1 form-group form-inline " +
-				"justify-content-center mb-0 mt-0 p-3 with-vertical-margin with-line-height " + bg}
+				"justify-content-center mb-0 mt-0 " +
+				"with-vertical-margin with-line-height padding-14px-20px " + bg}
 				>
-				<label className="color-white"> { this.props.value } </label>
+				<label className="color-white mb-0"> { this.props.value } </label>
 				{(this.props.loading) ?
 					<ReactLoading className="ml-2" type="spin" color="white"
 						height={20} width={20} /> :
@@ -74,25 +76,11 @@ export default class MainPage extends React.Component
 		this.askServer();
 	}
 
-	showModal = (info) =>
-	{
-		this.setState({ modalInfo: info, modalShow: true });
-	}
+	showModal = (info) => this.setState({ modalInfo: info, modalShow: true });
+	closeModal = () => this.setState({ modalInfo: "", modalShow: false });
 
-	closeModal = () =>
-	{
-		this.setState({ modalInfo: "", modalShow: false });
-	}
-
-	toggleNewVotedLoading = (show) =>
-	{
-		this.setState({ newVotedLoading: show });
-	}
-
-	toggleNewUnvotedLoading = (show) =>
-	{
-		this.setState({ newUnvotedLoading: show});
-	}
+	toggleNewVotedLoading = (show) => this.setState({ newVotedLoading: show });
+	toggleNewUnvotedLoading = (show) => this.setState({ newUnvotedLoading: show});
 
 	async askServer()
 	{
@@ -229,7 +217,7 @@ export default class MainPage extends React.Component
 	render()
 	{
 		return (
-			<div className="container with-min-width-300">
+			<div className="with-min-width-300">
 				<div className="d-flex">
 					<Info value={ 'New voted: ' + this.state.newVoted.toString() }
 					good={ true }
@@ -257,31 +245,16 @@ export default class MainPage extends React.Component
 					label="Memo" rows={ 4 } maxlength={ 250 }
 					onChange={ this.handleMemoChange }/>
 				<button onClick={ this.onSendClickHandler }
-					className="send-button">
+					className="send-button padding-14px-20px">
 					Send
 				</button>
-				<ReactModal
-					isOpen={ this.state.modalShow }
-					onRequestClose={ this.closeModal }
-					closeTimeoutMS={ 0 }
-					shouldCloseOnEsc={ true }
-					portalClassName="ReactModalPortal"
-					style={{
-				    content: {
-				      position: 'absolute',
-				      top: '40%',
-				      left: '30%',
-				      right: '30%',
-				      bottom: '40%'
-				    }
-				  }}
-				>
-				<div>
-					<p>{ this.state.modalInfo }</p>
-					<button className='close-button'
-						onClick={ this.closeModal }>Close</button>
-				</div>
-				</ReactModal>
-			</div>);
+				<Modal show={this.state.modalShow} onHide={ this.closeModal }>
+					<Modal.Body bsClass="font-size-1-2em margin-20">{ this.state.modalInfo }</Modal.Body>
+				    <Modal.Footer>
+				      <Button bsStyle="primary" onClick={ this.closeModal }>Close</Button>
+				    </Modal.Footer>
+				</Modal> 
+			</div>
+		);
 	}
 }
