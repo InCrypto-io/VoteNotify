@@ -18,7 +18,7 @@ GRANT ALL PRIVILEGES ON *.* TO '<your user name>'@'localhost';                  
 CREATE DATABASE <your db name>;
 use <your db name>;
 CREATE TABLE block_producer (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, account_name VARCHAR(12) NOT NULL UNIQUE);
-CREATE TABLE voter (id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, id_bp INT NOT NULL, account_name VARCHAR(12) NOT NULL UNIQUE, FOREIGN KEY (id_bp) REFERENCES block_producer(id));
+CREATE TABLE voter (id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, id_bp INT NOT NULL, account_name VARCHAR(12) NOT NULL, FOREIGN KEY (id_bp) REFERENCES block_producer(id));
 
     1.3 Add block producer to block_producer table.
 INSERT INTO block_producer (account_name) VALUES('<BP account name>');          //ex: INSERT INTO block_producer (account_name) VALUES('atticlabeosb');
