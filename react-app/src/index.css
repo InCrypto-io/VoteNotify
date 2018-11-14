@@ -35,13 +35,6 @@ textarea {
     background-color: #D13838 !important;
 }
 
-.center {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: auto;
-}
-
 .color-white {
     color: white;
 }
@@ -50,8 +43,24 @@ textarea {
     font-size: 1.2em;
 }
 
-.margin-20 {
+.margin-20px {
     margin: 20px;
+}
+
+.margin-top-30px {
+    margin-top: 30px;
+}
+
+.min-width-300px {
+    min-width: 300px;
+}
+
+.outline-green-solid {
+    outline: #4CAF50 solid 1px;
+}
+
+.outline-red-solid {
+    outline: #D13838 solid 1px;
 }
 
 .padding-14px-20px {
@@ -73,12 +82,4 @@ textarea {
 
 .with-line-height {
     line-height: 1.1em;
-}
-
-.with-vertical-margin {
-    margin-top: 30px;
-}
-
-.with-min-width-300 {
-    min-width: 300px;
 }

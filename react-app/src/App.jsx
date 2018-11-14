@@ -10,11 +10,14 @@ class Info extends React.Component
 {
 	render()
 	{
-		var bg = (this.props.good) ? "bg-green" : "bg-red";
+		var bg = (this.props.good) ? "bg-green " : "bg-red ";
+		var outline = (this.props.selected) ?
+			((this.props.good) ? "outline-green-solid " : "outline-red-solid ") :
+			"";
 		return (
-			<div className={"align-items-center d-flex flex-grow-1 form-group form-inline " +
+			<div className={ "align-items-center d-flex flex-grow-1 form-group form-inline " +
 				"justify-content-center mb-0 mt-0 " +
-				"with-vertical-margin with-line-height padding-14px-20px " + bg}
+				"margin-top-30px with-line-height padding-14px-20px " + bg + outline }
 				>
 				<label className="color-white mb-0"> { this.props.value } </label>
 				{(this.props.loading) ?
@@ -31,7 +34,7 @@ class InputField extends React.Component
 	render()
 	{
 		return (
-			<div className="form-group with-vertical-margin">
+			<div className="form-group margin-top-30px">
 				<label>
 					{ this.props.label }
 				</label>		
@@ -217,16 +220,18 @@ export default class MainPage extends React.Component
 	render()
 	{
 		return (
-			<div className="with-min-width-300">
+			<div className="min-width-300px">
 				<div className="d-flex">
 					<Info value={ 'New voted: ' + this.state.newVoted.toString() }
 					good={ true }
+					selected={ this.state.vote === "1" ? true: false }
 					loading={ this.state.newVotedLoading } />
 				<Info value={ 'New unvoted: ' + this.state.newUnvoted.toString() }
 					good={ false }
+					selected={ this.state.vote === "0" ? true: false }
 					loading={ this.state.newUnvotedLoading } />
 				</div>
-				<div className="form-group with-vertical-margin">
+				<div className="form-group margin-top-30px">
 					<label>Max transactions</label>
 					<NumericInput className="form-control"
 						min={ 1 } max={ 1000 } value={ this.state.maxNotifications }
@@ -236,7 +241,7 @@ export default class MainPage extends React.Component
 					label="BP account" rows={ 1 } maxlength={ 12 }
 					onChange={ this.handleBpAccChange }/>
 				<select onChange={ this.onChangeHandler }
-					className='form-control with-vertical-margin'
+					className='form-control margin-top-30px'
 					name="vote" value={ this.state.vote }>
 					<option value="1">Voted</option>
 					<option value="0">Unvoted</option>
@@ -249,7 +254,7 @@ export default class MainPage extends React.Component
 					Send
 				</button>
 				<Modal show={this.state.modalShow} onHide={ this.closeModal }>
-					<Modal.Body bsClass="font-size-1-2em margin-20">{ this.state.modalInfo }</Modal.Body>
+					<Modal.Body bsClass="font-size-1-2em margin-20px">{ this.state.modalInfo }</Modal.Body>
 				    <Modal.Footer>
 				      <Button bsStyle="primary" onClick={ this.closeModal }>Close</Button>
 				    </Modal.Footer>
