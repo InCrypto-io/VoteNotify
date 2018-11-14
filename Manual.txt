@@ -1,0 +1,114 @@
+*** The manual is tested on Ubuntu 18.04 ***
+
+Server side:
+
+1. Set up MySQL:
+(See this guide if something isn`t clear: https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-18-04)
+
+    1.1 Install mysql-server package
+sudo apt update
+sudo apt install mysql-server
+sudo mysql_secure_installation          //several steps of initial setup
+
+    1.2 Set up MySQL invironment (user, database, tables):
+sudo mysql              //opens MySQL shell
+CREATE USER '<your user name>'@'localhost' IDENTIFIED BY '<your password>';         //ex: CREATE USER 'myuser'@'localhost' IDENTIFIED BY 'VeRySeCuRePaSsWoRd';
+GRANT ALL PRIVILEGES ON *.* TO '<your user name>'@'localhost';                      //<your user name> is previousely created user
+
+CREATE DATABASE <your db name>;
+use <your db name>;
+CREATE TABLE block_producer (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, account_name VARCHAR(12) NOT NULL UNIQUE);
+CREATE TABLE voter (id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, id_bp INT NOT NULL, account_name VARCHAR(12) NOT NULL UNIQUE, FOREIGN KEY (id_bp) REFERENCES block_producer(id));
+
+    1.3 Add block producer to block_producer table.
+INSERT INTO block_producer (account_name) VALUES('<BP account name>');          //ex: INSERT INTO block_producer (account_name) VALUES('atticlabeosb');
+
+2. Set up node server:
+(See this guide if something isn`t clear: https://linuxize.com/post/how-to-install-node-js-on-ubuntu-18.04/)
+
+    2.1 Install nodejs:
+sudo apt update
+sudo apt install nodejs npm
+
+    2.2 Run nodejs server:
+put sources to <your server folder>
+cd <your server folder>
+npm install                 //install all dependencies
+node index.js
+
+    2.3 Config setup:
+Path: <your server folder>/config.json
+Server config has the next structure:
+{
+	"eos": {
+		"httpEndpoint": "<host address>",           //address of node. Ex: http://dev.cryptolions.io:38888 (for Jungle testnet)
+		"chainId": "<chain id>",                    //ex: 038f4b0fc8ff18a4f0842a8f0564611f6e96e8535901dd45e43ac8691a1c4dca (Jungle testnet)
+		"systemContractAcc": "eosio",               //system contract
+		"systemVotersTable": "voters"               //voters table name on system contract
+	},
+	"db": {
+		"host": "localhost",
+		"user": "<your user>",                      //
+		"password": "<your password>",              //for this fields use values from section 1.2
+		"database": "<your db>"                     //
+	}
+}
+
+
+Front-end:
+
+1. Set up front-end:
+
+    2.1 Install Scatter to your browser:
+Follow this guide: http://www.blockchainexpert.uk/blog/how-to-set-up-scatter-for-eos
+
+    2.2 Install nodejs:
+sudo apt update
+sudo apt install nodejs npm
+
+    2.3 Run nodejs server:
+put sources to <your front-end folder>
+cd <your front-end folder>
+npm install                 //install all dependencies
+npm start
+
+    2.4 Config setup:
+Path: <your front-end folder>/src/config.json
+Config has the next structure:
+{
+	"eos": {
+		"blockchain": "eos",
+	    "host": "<host address>",                   //address of producer. Ex: dev.cryptolions.io (for Jungle testnet)
+	    "port": <host port>,                        //port of producer. Ex: 38888 (for Jungle testnet)
+	    "protocol": "http",
+	    "chainId": "<chain id>"                       //ex: 038f4b0fc8ff18a4f0842a8f0564611f6e96e8535901dd45e43ac8691a1c4dca (Jungle testnet)
+	},
+	"http": {
+		"host": "",									//server address
+		"port": "3001"                              //server port
+	}
+}
+
+
+Usage:
+Open web page.
+	'New voted' and 'New unvoted' fields are showing how many voters left unnotificated.
+	In max transactions field you can write how much notifications can be executed after one 'Send' click.
+The minimum value is 1, the maximum value is 1000.
+	In 'BP Account' field write your (as block producer) account name.
+	In drop-down field select 'Voted' if you want to send memo to all accounts who recently had voted for you
+or 'Unvoted' if you want to send memo to all accounts who recently had taken their votes off you
+	In Memo field write a message that will be sent with notification
+	Press 'Send' button to send notifications.
+If an error occurs when interacting with server, simple pop up will be shown.
+After pressing 'Send' the pop up with number of successfully sent notifications will be shown.
+
+After you pressed 'Send' button a Scatter window will pop up.
+Select your account identity (the one that you entered into 'BP Account' field) and press 'Accept' button.
+    Note: To not to press 'Accept' for every notification,
+    before pressing 'Accept' button you must put this action to whitelist.
+    To do this you need to switch checkbox under 'Do you want to whitelist this contract action?'.
+    After that new checkboxes will appear. Check 'to' and 'memo' checkboxes.
+    Finally, press 'Accept'.
+
+Note: Every notification is a transfer of "0.0001 EOS" to voter.
