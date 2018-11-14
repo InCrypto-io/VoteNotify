@@ -4,7 +4,7 @@ router.get('/new_voted', function(req, res)
 {
 	var eosapp = req.app.get('eosapp');
 	var bpAccount = req.query.bp_account;
-	if (bpAccount == null)
+	if (typeof bpAccount !== 'string' || bpAccount === '')
 	{
 		res.sendStatus(404);
 	}
@@ -18,7 +18,7 @@ router.get('/new_voted_count', function(req, res)
 {
 	var eosapp = req.app.get('eosapp');
 	var bpAccount = req.query.bp_account;
-	if (bpAccount == null)
+	if (typeof bpAccount !== 'string' || bpAccount === '')
 	{
 		res.sendStatus(404);
 	}
@@ -33,7 +33,7 @@ router.get('/new_unvoted', function(req, res)
 {
 	var eosapp = req.app.get('eosapp');
 	var bpAccount = req.query.bp_account;
-	if (bpAccount == null)
+	if (typeof bpAccount !== 'string' || bpAccount === '')
 	{
 		res.sendStatus(404);
 	}
@@ -47,7 +47,7 @@ router.get('/new_unvoted_count', function(req, res)
 {
 	var eosapp = req.app.get('eosapp');
 	var bpAccount = req.query.bp_account;
-	if (bpAccount == null)
+	if (typeof bpAccount !== 'string' || bpAccount === '')
 	{
 		res.sendStatus(404);
 	}
@@ -62,7 +62,7 @@ router.put('/new_voted', function(req, res)
 {
 	var eosapp = req.app.get('eosapp');
 	var bpAccount = req.query.bp_account;
-	if (bpAccount == null)
+	if (typeof bpAccount !== 'string' || bpAccount === '')
 	{
 		res.sendStatus(404);
 	}
@@ -79,7 +79,7 @@ router.put('/new_unvoted', function(req, res)
 {
 	var eosapp = req.app.get('eosapp');
 	var bpAccount = req.query.bp_account;
-	if (bpAccount == null)
+	if (typeof bpAccount !== 'string' || bpAccount === '')
 	{
 		res.sendStatus(404);
 	}
