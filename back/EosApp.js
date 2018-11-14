@@ -27,7 +27,7 @@ class EosApp
 	        json: true});
 	}
 
-	/** @return {Promise} returns the whole voters table */
+	/** @return {Promise} returns the whole voters table from Eos blockchain */
 	async getVoters()
 	{
 		var voters = [];
@@ -210,6 +210,11 @@ class EosApp
 		}
 	}
 
+	/**
+	* Removes old voters from local database and inserts accounts
+	* @param {string} bp Block producer to set accounts for
+	* @param {array} accounts Accounts that will be set as voters of bp in local database
+	*/
 	setLocalVoted(bp, accounts)
 	{
 		return this.dbc.setBpVoters(bp, accounts)
