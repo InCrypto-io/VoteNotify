@@ -49,30 +49,6 @@ class InputField extends React.Component
 }
 
 
-class DropDown extends React.Component
-{
-	render()
-	{
-		let optionItems = this.props.items.map(item => 
-			<option value={item}>{item}</option>);
-		(optionItems.length !== 0) ?
-			optionItems = [<option value="" disabled selected hidden>Select...</option>]
-				.concat(optionItems) :
-			optionItems = [<option value="" disabled selected>No options</option>];
-		return (
-			<div className="form-group margin-top-30px">
-				<label>
-					{ this.props.label }
-				</label>
-				<select onChange={ this.props.onChange } value={ this.props.value }
-					className='form-control'>
-					{ optionItems }
-				</select>
-			</div>);
-	}
-}
-
-
 const eosValidSymbols = '.12345abcdefghijklmnopqrstuvwxyz';
 
 export default class MainPage extends React.Component
@@ -82,7 +58,6 @@ export default class MainPage extends React.Component
 		super(props);
 		this.state = {
 			vote: "1",
-			scatterAccList: [],
 			senderAcc: '',
 			bpAcc: '',
 			memo: '',
@@ -108,11 +83,19 @@ export default class MainPage extends React.Component
 					return;
 				}
 				return this.props.eosapp.getScatterAccounts()
-					.then(accounts => this.setState({ scatterAccList: accounts }));
+					.then(accounts =>
+					{
+						if (accounts.length === 0)
+						{
+							throw Error('No EOS account linked to this identity');
+						}
+						this.setState({ senderAcc: accounts[0] });
+					});
 			})
 			.catch(error =>
 			{
-				this.showModal("Failed to connect to Scatter:\n" + error.toString());
+				this.showModal("Failed to get identity from Scatter:\n" +
+					error.toString());
 			});
 	}
 
@@ -161,14 +144,7 @@ export default class MainPage extends React.Component
 		return this.state.memo !== "";
 	}
 
-	isSenderValid()
-	{
-		return this.state.senderAcc !== "";
-	}
-
 	//***Handlers***
-	handleSenderAccChange = (e) => this.setState({ senderAcc: e.target.value });
-
 	handleBpAccChange = (e) => this.setState({ bpAcc: e.target.value });
 
 	handleMemoChange = (e) => this.setState({ memo: e.target.value });
@@ -187,12 +163,7 @@ export default class MainPage extends React.Component
 
 	handleSendClick = async () =>
 	{
-		if (!this.isSenderValid())
-		{
-			this.showModal('Sender account must be choosen');
-			return;
-		}
-		else if (!this.isBpAccValid())
+		if (!this.isBpAccValid())
 		{
 			this.showModal('EOS account name must be not empty ' +
 				'and can contain only \'' + eosValidSymbols + '\' symbols.');
@@ -229,7 +200,6 @@ export default class MainPage extends React.Component
 			.then(async (json) =>
 			{
 				toggleLoading(true);
-				console.log(json);
 				var accounts = json.accounts;
 				if (accounts.length === 0)
 				{
@@ -286,10 +256,12 @@ export default class MainPage extends React.Component
 						min={ 1 } max={ 1000 } value={ this.state.maxNotifications }
 						onChange={ this.handleMaxNotificationsChange } />
 				</div>
-				<DropDown
-					label="Sender account" items={ this.state.scatterAccList }
-					value={ this.state.senderAcc } onChange={ this.handleSenderAccChange }
-				/>
+				<div className="form-group margin-top-30px">
+					<label>Sender account</label>
+					<label className='form-control'>
+						{ this.state.senderAcc !== '' ? this.state.senderAcc : 'No account' }
+					</label>
+				</div>
 				<InputField
 					label="BP account" rows={ 1 } maxlength={ 12 }
 					onChange={ this.handleBpAccChange }

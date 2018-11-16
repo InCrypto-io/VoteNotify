@@ -60,10 +60,11 @@ class EosApp
 			})
 			.then(identity =>
 			{
-				console.log(identity);
-				return identity.accounts.map(value =>
+				return identity.accounts
+					.filter(account => account.blockchain == 'eos')
+					.map(account =>
 					{
-						return value.name;
+						return account.name;
 					});
 			});
 	}
