@@ -31,26 +31,50 @@ class EosApp
 		this.systemContractAcc = 'eosio';
 		this.tokenContractAcc = 'eosio.token';
 		this.amount = '0.0001 EOS';
-		this.contractAccName = 'myvotenotify'; //TODO set it to valid account name
-		ScatterJS.scatter.connect("Put_Your_App_Name_Here").then(connected => {
+		this.contractAccName = 'myvotenotify';
+	}
+
+	connectScatter()
+	{
+		return ScatterJS.scatter.connect("My_app").then(async connected => {
 		    // User does not have Scatter Desktop, Mobile or Classic installed.
 		    if(!connected) return false;
-		    console.log('Connected: ');
-		    console.log(connected);
 
 		    this.scatter = ScatterJS.scatter;
 			this.eos = this.scatter.eos( this.network, Eos, {} );
 		    window.ScatterJS = null;
+		    return true;
 		});
+	}
+
+	async getScatterAccounts()
+	{
+		if (this.scatter.identity)
+		{
+			await this.scatter.forgetIdentity();
+		}
+		return this.scatter.getIdentity({ accounts: [this.network] })
+			.catch(error =>
+			{
+				throw Error(error.message);
+			})
+			.then(identity =>
+			{
+				console.log(identity);
+				return identity.accounts.map(value =>
+					{
+						return value.name;
+					});
+			});
 	}
 
 	sendMemo(from, to, message)
 	{
 		return this.scatter.getIdentity({ accounts:[this.network] })
-			.then((identity) =>
+			.then(identity =>
 			{
 				return this.eos.contract(this.tokenContractAcc)
-					.then((contract) =>
+					.then(contract =>
 					{
 						return contract.transfer(from, to, this.amount, message,
 							{ authorization: [from] });

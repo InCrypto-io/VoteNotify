@@ -37,13 +37,37 @@ class InputField extends React.Component
 			<div className="form-group margin-top-30px">
 				<label>
 					{ this.props.label }
-				</label>		
+				</label>
 				<textarea className='form-control'
 					rows={ this.props.rows }
 					maxlength={ this.props.maxlength }
 					placeholder=""
 					onChange={ this.props.onChange }>
 				</textarea>
+			</div>);
+	}
+}
+
+
+class DropDown extends React.Component
+{
+	render()
+	{
+		let optionItems = this.props.items.map(item => 
+			<option value={item}>{item}</option>);
+		(optionItems.length !== 0) ?
+			optionItems = [<option value="" disabled selected hidden>Select...</option>]
+				.concat(optionItems) :
+			optionItems = [<option value="" disabled selected>No options</option>];
+		return (
+			<div className="form-group margin-top-30px">
+				<label>
+					{ this.props.label }
+				</label>
+				<select onChange={ this.props.onChange } value={ this.props.value }
+					className='form-control'>
+					{ optionItems }
+				</select>
 			</div>);
 	}
 }
@@ -58,16 +82,10 @@ export default class MainPage extends React.Component
 		super(props);
 		this.state = {
 			vote: "1",
+			scatterAccList: [],
+			senderAcc: '',
 			bpAcc: '',
 			memo: '',
-			/*newVotedInfo: {
-				count: 0,
-				isLoading: false
-			},
-			newUnvotedInfo: {
-				count: 0,
-				isLoading: false
-			},*/
 			newVoted: 0,
 			newUnvoted: 0,
 			newVotedLoading: false,
@@ -76,7 +94,26 @@ export default class MainPage extends React.Component
 			modalInfo: "",
 			modalShow: false
 		};
+	}
+
+	componentDidMount()
+	{
 		this.askServer();
+		this.props.eosapp.connectScatter()
+			.then(connected =>
+			{
+				if (!connected)
+				{
+					this.showModal("Failed to connect to Scatter");
+					return;
+				}
+				return this.props.eosapp.getScatterAccounts()
+					.then(accounts => this.setState({ scatterAccList: accounts }));
+			})
+			.catch(error =>
+			{
+				this.showModal("Failed to connect to Scatter:\n" + error.toString());
+			});
 	}
 
 	showModal = (info) => this.setState({ modalInfo: info, modalShow: true });
@@ -124,15 +161,17 @@ export default class MainPage extends React.Component
 		return this.state.memo !== "";
 	}
 
-	handleBpAccChange = (e) =>
+	isSenderValid()
 	{
-		this.setState({ bpAcc: e.target.value });
+		return this.state.senderAcc !== "";
 	}
 
-	handleMemoChange = (e) =>
-	{
-		this.setState({ memo: e.target.value });
-	}
+	//***Handlers***
+	handleSenderAccChange = (e) => this.setState({ senderAcc: e.target.value });
+
+	handleBpAccChange = (e) => this.setState({ bpAcc: e.target.value });
+
+	handleMemoChange = (e) => this.setState({ memo: e.target.value });
 
 	handleMaxNotificationsChange = (valueAsNumber, valueAsString, element) =>
 	{
@@ -140,7 +179,51 @@ export default class MainPage extends React.Component
 			this.setState({ maxNotifications: valueAsNumber });
 	}
 
-	handleSendClick = (getAccounts, putAccounts, toggleLoading) =>
+	handleModeChange = (e) => {
+		this.setState({
+			[e.target.name]: e.target.value
+		})
+	}
+
+	handleSendClick = async () =>
+	{
+		if (!this.isSenderValid())
+		{
+			this.showModal('Sender account must be choosen');
+			return;
+		}
+		else if (!this.isBpAccValid())
+		{
+			this.showModal('EOS account name must be not empty ' +
+				'and can contain only \'' + eosValidSymbols + '\' symbols.');
+			return;
+		}
+		else if (!this.isMemoValid())
+		{
+			this.showModal('Memo must be filled.');
+			return;
+		}
+
+		if (this.state.vote === "1")
+		{
+			(!this.state.newVotedLoading) ?
+				this.send(this.props.httpclient.getNewVoted,
+					this.props.httpclient.putNewVoted,
+					this.toggleNewVotedLoading) :
+				this.showModal('Notifications are being processed.');
+		}
+		else if (this.state.vote === "0")
+		{
+			(!this.state.newUnvotedLoading) ?
+				this.send(this.props.httpclient.getNewUnvoted,
+					this.props.httpclient.putNewUnvoted,
+					this.toggleNewUnvotedLoading) :
+				this.showModal('Notifications are being processed.');
+		}
+	}
+	//===================
+
+	send = (getAccounts, putAccounts, toggleLoading) =>
 	{
 		getAccounts(this.state.bpAcc)
 			.then(async (json) =>
@@ -159,7 +242,7 @@ export default class MainPage extends React.Component
 				for (var i = 0; i < sendCount; i++)
 				{
 					try {
-						await this.props.eosapp.sendMemo(this.state.bpAcc,
+						await this.props.eosapp.sendMemo(this.state.senderAcc,
 							accounts[i], this.state.memo);
 						try {
 							var response = await putAccounts(this.state.bpAcc, [accounts[i]]);
@@ -183,54 +266,6 @@ export default class MainPage extends React.Component
 			});
 	}
 
-	onChangeHandler = (e) => {
-		this.setState({
-			[e.target.name]: e.target.value
-		})
-	}
-
-	onSendClickHandler = async () =>
-	{
-		if (!this.isBpAccValid())
-		{
-			this.showModal('Block producer account name must be not empty ' +
-				'and can contain only \'' + eosValidSymbols + '\' symbols.');
-			return;
-		}
-		else if (!this.isMemoValid())
-		{
-			this.showModal('Memo must be filled.');
-			return;
-		}
-
-		if (this.state.vote === "1")
-		{
-			if (!this.state.newVotedLoading)
-			{
-				this.handleSendClick(this.props.httpclient.getNewVoted,
-					this.props.httpclient.putNewVoted,
-					this.toggleNewVotedLoading);
-			}
-			else
-			{
-				this.showModal('Notifications are being processed.');
-			}
-		}
-		else if (this.state.vote === "0")
-		{
-			if (!this.state.newUnvotedLoading)
-			{
-				this.handleSendClick(this.props.httpclient.getNewUnvoted,
-					this.props.httpclient.putNewUnvoted,
-					this.toggleNewUnvotedLoading);
-			}
-			else
-			{
-				this.showModal('Notifications are being processed.');
-			}
-		}
-	}
-
 	render()
 	{
 		return (
@@ -251,10 +286,15 @@ export default class MainPage extends React.Component
 						min={ 1 } max={ 1000 } value={ this.state.maxNotifications }
 						onChange={ this.handleMaxNotificationsChange } />
 				</div>
+				<DropDown
+					label="Sender account" items={ this.state.scatterAccList }
+					value={ this.state.senderAcc } onChange={ this.handleSenderAccChange }
+				/>
 				<InputField
 					label="BP account" rows={ 1 } maxlength={ 12 }
-					onChange={ this.handleBpAccChange }/>
-				<select onChange={ this.onChangeHandler }
+					onChange={ this.handleBpAccChange }
+				/>
+				<select onChange={ this.handleModeChange }
 					className='form-control margin-top-30px'
 					name="vote" value={ this.state.vote }>
 					<option value="1">Voted</option>
@@ -262,17 +302,20 @@ export default class MainPage extends React.Component
 				</select>
 				<InputField
 					label="Memo" rows={ 4 } maxlength={ 250 }
-					onChange={ this.handleMemoChange }/>
-				<button onClick={ this.onSendClickHandler }
+					onChange={ this.handleMemoChange }
+				/>
+				<button onClick={ this.handleSendClick }
 					className="send-button padding-14px-20px">
 					Send
 				</button>
 				<Modal show={this.state.modalShow} onHide={ this.closeModal }>
-					<Modal.Body bsClass="font-size-1-2em margin-20px">{ this.state.modalInfo }</Modal.Body>
+					<Modal.Body bsClass="font-size-1-2em margin-20px">
+						{ this.state.modalInfo }
+					</Modal.Body>
 				    <Modal.Footer>
 				      <Button bsStyle="primary" onClick={ this.closeModal }>Close</Button>
 				    </Modal.Footer>
-				</Modal> 
+				</Modal>
 			</div>
 		);
 	}
