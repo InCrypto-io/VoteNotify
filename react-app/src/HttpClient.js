@@ -18,6 +18,7 @@ class HttpClient
 				method: 'GET',
 				mode: 'cors'
 			})
+			.catch(error => { throw Error('Network problem.') })
 			.then(function(response) {
 				if (!response.ok) {
 					throw Error(response.statusText);
@@ -36,6 +37,7 @@ class HttpClient
 				method: 'GET',
 				mode: 'cors'
 			})
+			.catch(error => { throw Error('Network problem.') })
 			.then(function(response) {
 				if (!response.ok) {
 					throw Error(response.statusText);
@@ -54,6 +56,7 @@ class HttpClient
 				method: 'GET',
 				mode: 'cors'
 			})
+			.catch(error => { throw Error('Network problem.') })
 			.then(function(response) {
 				if (!response.ok) {
 					throw Error(response.statusText);
@@ -72,6 +75,7 @@ class HttpClient
 				method: 'GET',
 				mode: 'cors'
 			})
+			.catch(error => { throw Error('Network problem.') })
 			.then(function(response) {
 				if (!response.ok) {
 					throw Error(response.statusText);
@@ -94,6 +98,7 @@ class HttpClient
 				body: JSON.stringify({ accounts: accounts }),
 				mode: 'cors'
 			})
+			.catch(error => { throw Error('Network problem.') })
 			.then(function(response) {
 				if (!response.ok) {
 					throw Error(response.statusText);
@@ -115,6 +120,7 @@ class HttpClient
 				body: JSON.stringify({ accounts: accounts }),
 				mode: 'cors'
 			})
+			.catch(error => { throw Error('Network problem.') })
 			.then(function(response) {
 				if (!response.ok) {
 					throw Error(response.statusText);

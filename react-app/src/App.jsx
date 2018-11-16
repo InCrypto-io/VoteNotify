@@ -178,7 +178,7 @@ export default class MainPage extends React.Component
 			})
 			.catch((error) =>
 			{
-				this.showModal('Failed to get info from server: ' + error.toString());
+				this.showModal('Failed to get info from server:\n' + error.toString());
 				toggleLoading(false);
 			});
 	}
@@ -205,15 +205,29 @@ export default class MainPage extends React.Component
 
 		if (this.state.vote === "1")
 		{
-			this.handleSendClick(this.props.httpclient.getNewVoted,
-				this.props.httpclient.putNewVoted,
-				this.toggleNewVotedLoading);
+			if (!this.state.newVotedLoading)
+			{
+				this.handleSendClick(this.props.httpclient.getNewVoted,
+					this.props.httpclient.putNewVoted,
+					this.toggleNewVotedLoading);
+			}
+			else
+			{
+				this.showModal('Notifications are being processed.');
+			}
 		}
 		else if (this.state.vote === "0")
 		{
-			this.handleSendClick(this.props.httpclient.getNewUnvoted,
-				this.props.httpclient.putNewUnvoted,
-				this.toggleNewUnvotedLoading);
+			if (!this.state.newUnvotedLoading)
+			{
+				this.handleSendClick(this.props.httpclient.getNewUnvoted,
+					this.props.httpclient.putNewUnvoted,
+					this.toggleNewUnvotedLoading);
+			}
+			else
+			{
+				this.showModal('Notifications are being processed.');
+			}
 		}
 	}
 
